@@ -1,5 +1,6 @@
 import unittest
 from deck import Deck
+from exceptions import BadPlayingCardError
 
 
 class DeckTests(unittest.TestCase):
@@ -57,14 +58,19 @@ class CardTests(unittest.TestCase):
 
     def test_str(self):
         card = Deck.Card("clubs", "10")  # 10 of clubs
-        self.assertEqual(str(card), "10 of clubs",
+        self.assertEqual(str(card), "10 of Clubs",
                          "The string representation of the card is incorrect")
         card = Deck.Card("hearts", 14)  # Ace of hearts
-        self.assertEqual(str(card), "Ace of hearts",
+        self.assertEqual(str(card), "Ace of Hearts",
                          "The string representation of the card is incorrect")
         card = Deck.Card("diamonds", 11)  # Jack of diamonds
-        self.assertEqual(str(card), "Jack of diamonds",
+        self.assertEqual(str(card), "Jack of Diamonds",
                          "The string representation of the card is incorrect")
+
+    def test_bad_card(self):
+        self.assertRaises(BadPlayingCardError, Deck.Card, "foo", 2)
+        self.assertRaises(BadPlayingCardError, Deck.Card, "clubs", 1)
+        self.assertRaises(BadPlayingCardError, Deck.Card, "hearts", 15)
 
 
 if __name__ == '__main__':

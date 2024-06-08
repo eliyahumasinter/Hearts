@@ -1,11 +1,9 @@
 from typing import Literal, Type, get_args
 import random
 
+from exceptions import BadPlayingCardError
+
 SUIT = Literal["clubs", "hearts", "spades", "diamonds"]
-
-
-class BadPlayingCardError(Exception):
-    pass
 
 
 class Deck:
@@ -63,7 +61,7 @@ class Deck:
             """
             if suit not in ["hearts", "diamonds", "clubs", "spades"]:
                 raise BadPlayingCardError(f"Invalid suit: {suit}")
-            if rank < 2 or rank > 14:
+            if isinstance(rank, int) and (rank < 2 or rank > 14):
                 raise BadPlayingCardError(f"Invalid rank: {rank}")
 
             self.suit: SUIT = suit

@@ -1,9 +1,6 @@
 from player import Player
 from deck import Deck
-
-
-class BadPlayerListError(Exception):
-    pass
+from exceptions import BadPlayerListError
 
 
 class Game:
