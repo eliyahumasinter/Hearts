@@ -1,7 +1,7 @@
 from typing import Literal, Type, get_args
 import random
 
-SUIT = Literal["hearts", "diamonds", "clubs", "spades"]
+SUIT = Literal["clubs", "hearts", "spades", "diamonds"]
 
 
 class BadPlayingCardError(Exception):
@@ -47,27 +47,27 @@ class Deck:
 
     class Card:
         '''
-        A class to represent a playing card in hearts. Each card has a suit, a value, and a point value. 
-        The value is an integer, 2-14, where 11 is a jack, 12 is a queen, 13 is a king, and 14 is an ace. (Note that in hearts, the ace is high, so it has a value of 14.)
+        A class to represent a playing card in hearts. Each card has a suit, a rank, and a point value. 
+        The rank is an integer, 2-14, where 11 is a jack, 12 is a queen, 13 is a king, and 14 is an ace. (Note that in hearts, the ace is high, so it has a value of 14.)
         '''
         faceCardNames = {11: "Jack", 12: "Queen", 13: "King", 14: "Ace"}
         suiteValues = {"clubs": 0, "hearts": 1, "spades": 2,
                        "diamonds": 3}  # used for sorting value
 
-        def __init__(self, suit: SUIT, value: int):
-            """Create a new card with the given suit and value after validating the data.
+        def __init__(self, suit: SUIT, rank: int):
+            """Create a new card with the given suit and rank after validating the data.
 
             Args:
                 suit (SUIT): one of the four suits in a deck of cards
-                value (int): the value of the card, 2-14 (2-10, 11=jack, 12=queen, 13=king, 14=ace)
+                rank (int): the rank of the card, 2-14 (2-10, 11=jack, 12=queen, 13=king, 14=ace)
             """
             if suit not in ["hearts", "diamonds", "clubs", "spades"]:
                 raise BadPlayingCardError(f"Invalid suit: {suit}")
-            if value < 2 or value > 14:
-                raise BadPlayingCardError(f"Invalid value: {value}")
+            if rank < 2 or rank > 14:
+                raise BadPlayingCardError(f"Invalid rank: {rank}")
 
-            self.suit = suit
-            self.value = value
+            self.suit: SUIT = suit
+            self.rank = rank
 
         def short_name(self) -> str:
             """A method to get a cards 'short name'. This is a string that represents the card in a short form. 
@@ -76,7 +76,7 @@ class Deck:
             Returns:
                 str: The short name of the card
             """
-            return f"{self.suit[0].lower()}{self.value}"
+            return f"{self.suit[0].lower()}{self.rank}"
 
         def points(self) -> int:
             """Return the number of points this card is worth in the game hearts. 1 point for each heart, 13 for the queen of spades, -10 for the jack of diamonds.
@@ -86,9 +86,9 @@ class Deck:
             """
             if self.suit == "hearts":
                 return 1
-            elif self.suit == "spades" and self.value == 12:
+            elif self.suit == "spades" and self.rank == 12:
                 return 13
-            elif self.suit == "diamonds" and self.value == 11:
+            elif self.suit == "diamonds" and self.rank == 11:
                 return -10
             else:
                 return 0
@@ -103,7 +103,7 @@ class Deck:
                 bool: true if this card should appear before the other card, false otherwise
             """
             if self.suit == other.suit:
-                return self.value < other.value
+                return self.rank < other.rank
             return self.suiteValues[self.suit] < self.suiteValues[other.suit]
 
         def __str__(self) -> str:
@@ -112,6 +112,6 @@ class Deck:
             Returns:
                 str: A string representation of the card
             """
-            if self.value in self.faceCardNames:
-                return f"{self.faceCardNames[self.value]} of {self.suit.capitalize()}"
-            return f"{self.value} of {self.suit.capitalize()}"
+            if self.rank in self.faceCardNames:
+                return f"{self.faceCardNames[self.rank]} of {self.suit.capitalize()}"
+            return f"{self.rank} of {self.suit.capitalize()}"
