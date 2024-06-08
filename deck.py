@@ -1,4 +1,4 @@
-from typing import Literal, get_args
+from typing import Literal, Type, get_args
 import random
 
 SUIT = Literal["hearts", "diamonds", "clubs", "spades"]
@@ -93,7 +93,7 @@ class Deck:
             else:
                 return 0
 
-        def __lt__(self, other: 'Card') -> bool:
+        def __lt__(self, other: 'Type[Deck.Card]') -> bool:
             """The order of cards we will consider by suite is a personal preference of Clubs, Hearts, Spades, Diamonds, and next by value.
 
             Args:
