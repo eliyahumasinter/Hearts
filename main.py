@@ -7,7 +7,7 @@ def main():
     players = [Player(user) for user in users]
 
     game = Game(players)
-    game.print_current_hands()
+    game.play_game()
 
 
 if __name__ == "__main__":

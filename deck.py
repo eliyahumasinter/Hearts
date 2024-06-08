@@ -1,4 +1,4 @@
-from typing import Literal, Type, get_args
+from typing import Literal, Type, get_args, TYPE_CHECKING
 import random
 
 from exceptions import BadPlayingCardError
@@ -104,7 +104,20 @@ class Deck:
                 return self.rank < other.rank
             return self.suiteValues[self.suit] < self.suiteValues[other.suit]
 
-        def __str__(self) -> str:
+        def __eq__(self, other: object) -> bool:
+            """Determine if two cards are equal. 
+
+            Args:
+                other (Card): A card
+
+            Returns:
+                bool: True if the cards are the same, False otherwise
+            """
+            if not isinstance(other, Deck.Card):
+                return False
+            return self.suit == other.suit and self.rank == other.rank
+
+        def __repr__(self) -> str:
             """Display card name as a human would expect it to be displayed. 
 
             Returns:
