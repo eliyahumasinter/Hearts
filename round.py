@@ -72,6 +72,7 @@ class Round:
                 round (Round): The round that the trick is being played in
             """
             self.round = round
+            self.game = round.game
             self.players = round.players
             self.played: dict['Player', Deck.Card] = {}
             self.current_player = self.round.lead_player
@@ -87,17 +88,21 @@ class Round:
             self.played[self.current_player] = played_card
 
             self.led_suit = led_suit if led_suit else self.played[self.current_player].suit
-
-            if played_card.suit == "hearts" and not self.round.hearts_broken:
+            if self.led_suit == "hearts" and not self.round.hearts_broken:
                 self.round.hearts_broken = True
-                print("Hearts have been broken!")
+                self.game.hearts_broken_hook()
 
             # Play the remaining cards
             for _ in range(3):
                 self.current_player = self.players[(
                     self.players.index(self.current_player) + 1) % 4]
-                self.played[self.current_player] = self.round.game.play_card(
+                card = self.round.game.play_card(
                     self.current_player, self.led_suit, False)
+                self.played[self.current_player] = card
+                if card.suit == "hearts" and not self.round.hearts_broken:
+                    self.round.hearts_broken = True
+                    self.game.hearts_broken_hook()
+
             self.winner = self.__get_winner_of_trick()
 
         def __get_winner_of_trick(self) -> 'Player':

@@ -25,6 +25,14 @@ class API:
         self.game = None
         self.play_card = play_card
         self.players: list[Player] = []
+        self.round_end_hook = lambda: None
+        self.hearts_broken_hook = lambda: None
+
+    def set_round_end_hook(self, hook: Callable[[], None]):
+        self.round_end_hook = hook
+
+    def set_hearts_broken_hook(self, hook: Callable[[], None]):
+        self.hearts_broken_hook = hook
 
     def add_player(self, player_name: str):
         if player_name in self.players:
@@ -44,7 +52,9 @@ class API:
                 raise ValueError("Invalid card played")
             return card
 
-        self.game = Game(self.players, validate_play_card)
+        self.game = Game(self.players, validate_play_card,
+                         self.hearts_broken_hook,
+                         self.round_end_hook)
         self.game.play_game()
 
     def reset_game(self):

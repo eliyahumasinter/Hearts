@@ -25,11 +25,23 @@ def main():
         allowed_cards = api.get_allowed_cards(player, led_suit, is_leading)
 
         print("Allowed cards: ", dict(enumerate(allowed_cards)))
-        card = int(input("Enter the card to play by number in list: \n"))
+        # card = int(input("Enter the card to play by number in list: \n"))
         print()
-        return allowed_cards[card]
+        return allowed_cards[0]
+
+    def hearts_broken_callback():
+        print('\n\n\n', "Hearts has been broken!", '\n\n\n')
 
     api = API(play_card)
+    api.set_hearts_broken_hook(hearts_broken_callback)
+
+    def print_round_score():
+        state = api.get_current_state()
+        players = state["players"]
+        for player in players:
+            print(player, ":", players[player]['total_score'], end=" | ")
+    api.set_round_end_hook(print_round_score)
+
     for user in users:
         api.add_player(user)
     api.start_game()

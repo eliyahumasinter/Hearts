@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 class Game:
-    def __init__(self, players: list[Player], play_card: Callable[[Player, Optional['SUIT'], bool], Deck.Card]) -> None:
+    def __init__(self, players: list[Player], play_card: Callable[[Player, Optional['SUIT'], bool], Deck.Card], hearts_broken_hook: Callable[[], None], round_end_hook: Callable[[], None]) -> None:
         """Initialize the game with the given players and deal the cards. Ensure that there are a correct number of unique players
         Version 1.0 - Only supports 4 players
 
@@ -24,6 +24,8 @@ class Game:
 
         self.players = players
         self.play_card = play_card
+        self.hearts_broken_hook = hearts_broken_hook
+        self.round_end_hook = round_end_hook
         self.deck = Deck()
         self.hands = self.deck.deal()
         for i, player in enumerate(self.players):
@@ -49,8 +51,8 @@ class Game:
             for player in self.players:
                 player.finish_round()  # Update player scores and prepare for next round
             self.round_count += 1
-            # for player in self.players:
-            #     print(f"{player}: {player.total_score}")
+
+            self.round_end_hook()
 
             break  # ! Remove this break statement
 
