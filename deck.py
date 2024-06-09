@@ -1,4 +1,4 @@
-from typing import Literal, Type, get_args, TYPE_CHECKING
+from typing import Literal, Type, get_args
 import random
 
 from exceptions import BadPlayingCardError
