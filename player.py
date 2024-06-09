@@ -16,6 +16,8 @@ class Player:
         self.round_score = 0  # The score of the player in the current round
         # A list of tricks taken by the player in the current round
         self.cards_taken: list['Deck.Card'] = []
+        # The cards that the player has passed
+        self.passed_cards: list['Deck.Card'] = []
 
     def set_hand(self, hand: list['Deck.Card']):
         self.hand = hand
@@ -25,6 +27,7 @@ class Player:
         # TODO: Check if the player has shot the moon
         self.round_score = 0
         self.cards_taken = []
+        self.passed_cards = []
 
     def allowed_cards_to_play(self, trick: 'Round.Trick', led_suit: Optional['SUIT'], is_leading: bool) -> list['Deck.Card']:
         """Get the cards that the player is allowed to play in the current trick.

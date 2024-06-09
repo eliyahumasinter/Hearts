@@ -10,7 +10,15 @@ if TYPE_CHECKING:
 
 
 class Game:
-    def __init__(self, players: list[Player], play_card: Callable[[Player, Optional['SUIT'], bool], Deck.Card], hearts_broken_hook: Callable[[], None], round_end_hook: Callable[[], None]) -> None:
+    def __init__(self,
+                 players: list[Player],
+                 play_card: Callable[[Player, Optional['SUIT'], bool], Deck.Card],
+                 get_pass_cards: Callable[[Player], list[Deck.Card]],
+                 hearts_broken_hook: Callable[[], None],
+                 round_end_hook: Callable[[], None],
+                 end_game_hook: Callable[[], None],
+                 passed_cards_hook: Callable[[dict[Player, list[Deck.Card]]], None],
+                 ) -> None:
         """Initialize the game with the given players and deal the cards. Ensure that there are a correct number of unique players
         Version 1.0 - Only supports 4 players
 
@@ -24,15 +32,16 @@ class Game:
 
         self.players = players
         self.play_card = play_card
+        self.get_pass_cards = get_pass_cards
         self.hearts_broken_hook = hearts_broken_hook
         self.round_end_hook = round_end_hook
-        self.deck = Deck()
-        self.hands = self.deck.deal()
-        for i, player in enumerate(self.players):
-            player.set_hand(self.hands[i])
+        self.end_game_hook = end_game_hook
+        self.passed_cards_hook = passed_cards_hook
 
-        self.round_count = 0
+        self.deck = Deck()
+
         self.current_round = None
+        self.round_count = 0
 
     def pass_cards(self, player: Player, cards: list[Deck.Card]) -> None:
         """Method to pass cards from one player to another. This should be  called in the beginning of each round.
@@ -42,19 +51,53 @@ class Game:
             player (Player): The player who is passing the cards
             cards (list[Deck.Card]): the three cards that the player is passing
         """
-        pass
+        if len(cards) != 3:
+            raise ValueError("You must pass exactly 3 cards")
+        if not all([card in player.hand for card in cards]):
+            raise ValueError("You must pass cards that are in your hand")
+
+        player.hand = [card for card in player.hand if card not in cards]
+        # Pass the cards to the correct player
+        if self.round_count % 4 == 0:  # pass to the left
+            other = self.players[(self.players.index(player) - 1) % 4]
+        elif self.round_count % 4 == 1:  # pass to the right
+            other = self.players[(self.players.index(player) + 1) % 4]
+        elif self.round_count % 4 == 2:  # pass across
+            other = self.players[(self.players.index(player) + 2) % 4]
+        else:  # Hold hand
+            raise ValueError("You should not be passing cards on a hold round")
+        # We don't want to put the cards in the hand yet until everyone has passed
+        other.passed_cards.extend(cards)
 
     def play_game(self) -> None:
+
         while max([player.total_score for player in self.players]) < END_GAME_SCORE:
+            self.hands = self.deck.deal()
+            for i, player in enumerate(self.players):
+                player.set_hand(self.hands[i])
+
+            # Pass cards
+            if self.round_count % 4 != 3:
+                for player in self.players:
+                    cards = self.get_pass_cards(player)
+
+                    self.pass_cards(player, cards)
+                # Put the passed cards in the hand
+                passed_cards = {}
+                for player in self.players:
+                    player.hand.extend(player.passed_cards)
+                    passed_cards[player] = player.passed_cards
+                    player.passed_cards = []
+                self.passed_cards_hook(passed_cards)
+
             self.round = Round(self)  # type: ignore
             self.round.play_round()
             for player in self.players:
                 player.finish_round()  # Update player scores and prepare for next round
+
             self.round_count += 1
-
             self.round_end_hook()
-
-            break  # ! Remove this break statement
+        self.end_game_hook()
 
     def reset_game(self) -> None:
         self.deck = Deck()
