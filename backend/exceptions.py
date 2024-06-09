@@ -4,3 +4,11 @@ class BadPlayingCardError(Exception):
 
 class BadPlayerListError(Exception):
     pass
+
+
+class BadPassingCardsError(Exception):
+    pass
+
+
+class NoLegalMovesError(Exception):
+    pass

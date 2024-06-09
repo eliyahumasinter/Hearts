@@ -2,8 +2,6 @@ from typing import Optional, TYPE_CHECKING
 from api import API
 from backend.player import Player
 from backend.deck import Deck, SUIT
-if TYPE_CHECKING:
-    pass
 
 
 def main():

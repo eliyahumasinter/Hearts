@@ -1,6 +1,6 @@
 import unittest
-from deck import Deck
-from exceptions import BadPlayingCardError
+from backend.deck import Deck
+from backend.exceptions import BadPlayingCardError
 
 
 class DeckTests(unittest.TestCase):
