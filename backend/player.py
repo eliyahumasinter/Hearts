@@ -45,42 +45,35 @@ class Player:
         first_round = trick.round.trick_count == 0
         void_in_led_suit = not any(
             [card.suit == led_suit for card in self.hand])
-        allowed = []
         only_hearts_left = all([card.suit == "hearts" for card in self.hand])
         if first_round:
             if is_leading:
                 # We must have the 2 of clubs
-                allowed = [card for card in self.hand if card.suit ==
-                           "clubs" and card.rank == 2]
+                return [card for card in self.hand if card.suit ==
+                        "clubs" and card.rank == 2]
             else:
                 if void_in_led_suit:  # Play any non point card
                     # Play any card if no non point card is found
-                    allowed = [card for card in self.hand if card.points()
-                               <= 0] or self.hand
+                    return [card for card in self.hand if card.points()
+                            <= 0] or self.hand
                 else:
-                    allowed = [
+                    return [
                         card for card in self.hand if card.suit == "clubs"]
 
         else:  # Not the first round
             if led_suit is None:  # Player is leading
                 if hearts_broken or only_hearts_left:
-                    allowed = self.hand
+                    return self.hand
                 else:
-                    allowed = [
+                    return [
                         card for card in self.hand if card.suit != "hearts"]
             else:  # someone else led
                 if led_suit == "hearts" or hearts_broken or void_in_led_suit:
-                    allowed = self.hand
+                    return self.hand
                 else:
                     # Play the same suit if possible
-                    allowed = [
+                    return [
                         card for card in self.hand if card.suit == led_suit]
-        if len(allowed) == 0:
-            print("how/why did this happen?")
-            print("Player: ", self.name, self.hand)
-            print("Led suit: ", led_suit, "Is leading: ", is_leading, "First round: ", first_round,
-                  "Hearts broken: ", hearts_broken, "Void in led suit: ", void_in_led_suit, "Allowed: ", allowed)
-        return allowed
 
     def __repr__(self):
         return self.name

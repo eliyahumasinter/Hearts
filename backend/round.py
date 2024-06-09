@@ -1,12 +1,12 @@
 
 from typing import Optional, TYPE_CHECKING
 
-from deck import Deck
+from backend.deck import Deck
 
 if TYPE_CHECKING:
-    from player import Player
-    from deck import SUIT
-    from game import Game
+    from backend.player import Player
+    from backend.deck import SUIT
+    from backend.game import Game
 
 
 class Round:

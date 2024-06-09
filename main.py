@@ -1,14 +1,15 @@
 from typing import Optional, TYPE_CHECKING
 from api import API
+from backend.player import Player
+from backend.deck import Deck, SUIT
 if TYPE_CHECKING:
-    from deck import Deck, SUIT
-    from player import Player
+    pass
 
 
 def main():
     users = ["Alice", "Bob", "Charlie", "David"]
 
-    def play_card_hook(player: 'Player', led_suit: Optional['SUIT'], is_leading: bool) -> 'Deck.Card':
+    def play_card_hook(player: Player, led_suit: Optional[SUIT], is_leading: bool) -> Deck.Card:
         """Method to get the card to play from the player. This method will be called for each player in the trick. 
 
             Args:
@@ -37,7 +38,7 @@ def main():
     api.set_play_card_hook(play_card_hook)
     api.set_hearts_broken_hook(hearts_broken_callback)
 
-    def get_pass_cards(player: 'Player') -> list['Deck.Card']:
+    def get_pass_cards(player: Player) -> list[Deck.Card]:
         """Method to get the cards to pass from the player. This method will be called for each player at the beginning of the round."""
         print('Passing', api.get_passing_direction())
         print("Player: ", player)
@@ -60,7 +61,7 @@ def main():
             print(player, ":", players[player]['total_score'], end=" | ")
     api.set_round_end_hook(print_round_score)
 
-    def passed_cards_hook(passed_card_details: dict[str, list['Deck.Card']]):
+    def passed_cards_hook(passed_card_details: dict[str, list[Deck.Card]]):
         print("Cards have been passed!")
         for player, cards in passed_card_details.items():
             print(player, " received: ", cards)

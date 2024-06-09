@@ -1,12 +1,11 @@
 from typing import Callable, Optional, TYPE_CHECKING
-from player import Player
-from deck import Deck
-from exceptions import BadPlayerListError
-from round import Round
-from settings import END_GAME_SCORE
+from backend.player import Player
+from backend.deck import Deck
+from backend.exceptions import BadPlayerListError
+from backend.round import Round
 
 if TYPE_CHECKING:
-    from deck import SUIT
+    from backend.deck import SUIT
 
 
 class Game:
@@ -18,6 +17,7 @@ class Game:
                  round_end_hook: Callable[[], None],
                  end_game_hook: Callable[[], None],
                  passed_cards_hook: Callable[[dict[Player, list[Deck.Card]]], None],
+                 settings={'END_GAME_SCORE': 50, 'JACK_NEGATIVE': True}
                  ) -> None:
         """Initialize the game with the given players and deal the cards. Ensure that there are a correct number of unique players
         Version 1.0 - Only supports 4 players
@@ -31,8 +31,13 @@ class Game:
                 "The game only supports 4 players. Please provide a list of 4 players with unique names.")
 
         self.players = players
+        self.settings = settings
+
+        # Hook that will be called when a player needs to play a card, it will return a valid card to play
         self.play_card = play_card
+        # Hook that will be called when a player needs to pass cards, it will return a list of 3 valid cards to pass
         self.get_pass_cards = get_pass_cards
+
         self.hearts_broken_hook = hearts_broken_hook
         self.round_end_hook = round_end_hook
         self.end_game_hook = end_game_hook
@@ -41,6 +46,7 @@ class Game:
         self.deck = Deck()
 
         self.current_round = None
+        # The number of rounds that have been played in this game
         self.round_count = 0
 
     def pass_cards(self, player: Player, cards: list[Deck.Card]) -> None:
@@ -66,12 +72,14 @@ class Game:
             other = self.players[(self.players.index(player) + 2) % 4]
         else:  # Hold hand
             raise ValueError("You should not be passing cards on a hold round")
+
         # We don't want to put the cards in the hand yet until everyone has passed
         other.passed_cards.extend(cards)
 
     def play_game(self) -> None:
-
-        while max([player.total_score for player in self.players]) < END_GAME_SCORE:
+        """Main play loop for the game. We keep playing rounds until a player reaches the end game score.
+        """
+        while max([player.total_score for player in self.players]) < self.settings['END_GAME_SCORE']:
             self.hands = self.deck.deal()
             for i, player in enumerate(self.players):
                 player.set_hand(self.hands[i])
@@ -96,10 +104,13 @@ class Game:
                 player.finish_round()  # Update player scores and prepare for next round
 
             self.round_count += 1
-            self.round_end_hook()
-        self.end_game_hook()
+            self.round_end_hook()  # Call round end hook
+        self.end_game_hook()  # Call end game hook
 
     def reset_game(self) -> None:
+        """
+        Reset the game to the initial state
+        """
         self.deck = Deck()
         self.hands = self.deck.deal()
         for i, player in enumerate(self.players):

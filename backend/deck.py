@@ -1,7 +1,7 @@
 from typing import Literal, Type, get_args
 import random
 
-from exceptions import BadPlayingCardError
+from backend.exceptions import BadPlayingCardError
 
 SUIT = Literal["clubs", "hearts", "spades", "diamonds"]
 
