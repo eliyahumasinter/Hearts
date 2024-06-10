@@ -96,7 +96,6 @@ class Game:
                     player.hand.extend(player.passed_cards)
                     passed_cards[player] = player.passed_cards
                     player.passed_cards = []
-                self.passed_cards_hook(passed_cards)
 
             self.round = Round(self)  # type: ignore
             self.round.play_round()
