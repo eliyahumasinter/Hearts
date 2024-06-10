@@ -259,7 +259,7 @@ class API:
             raise ValueError("Game has not started")
 
         allowed_cards = player.allowed_cards_to_play(
-            self.game.round.hearts_broken, self.game.round_count == 0, led_suit, is_leading)
+            self.game.round.hearts_broken, self.game.round.trick_count == 0, led_suit, is_leading)
         return allowed_cards
 
     def get_passing_direction(self) -> Literal['left', 'right', 'across', 'hold']:
