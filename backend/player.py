@@ -47,7 +47,7 @@ class Player:
             list[Deck.Card]: The cards that the player is allowed to play
         """
 
-        void_in_led_suit = not any(
+        void_in_led_suit = led_suit and not any(
             [card.suit == led_suit for card in self.hand])
         only_hearts_left = all([card.suit == "hearts" for card in self.hand])
         if first_round:
