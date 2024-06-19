@@ -5,6 +5,7 @@ from typing import Callable, Literal, Optional
 from backend.exceptions import BadPlayerListError
 from backend.game import Game
 from backend.player import Player
+from backend.round import Round
 from backend.deck import Deck, SUIT
 
 
@@ -38,7 +39,11 @@ class API:
         self.hearts_broken_hook = lambda: None
         # This hook gets called when the game ends
         self.end_game_hook = lambda: None
-        # This hook gets called when the players have passed their cards, it sends which cards were passed
+        # This hook gets called when the players have passed their cards, it sends which cards were
+
+        self.trick_end_hook: Callable[[
+            'Round.Trick'], None] | None = None
+
         self.passed_cards_hook: Callable[[
         ], dict['Player', list['Deck.Card']]] = lambda: {}
 
@@ -129,6 +134,17 @@ class API:
 
         self.round_end_hook = hook
 
+    def set_trick_end_hook(self, hook: Callable[['Round.Trick'], None]):
+        """Set the hook that will be called when a trick ends
+
+        Args:
+            hook (Callable[[], None]): the `trick_end_hook` must be a callable function
+        """
+        if not callable(hook):
+            raise ValueError("Hook must be a callable function")
+
+        self.trick_end_hook = hook
+
     def set_passed_cards_hook(self, hook: Callable[[], dict['Player', list['Deck.Card']]]):
         """Set the hook that will be called when the players have passed their cards, it sends which cards were passed
 
@@ -205,6 +221,7 @@ class API:
                              self.get_pass_cards_validated,
                              self.hearts_broken_hook,
                              self.round_end_hook,
+                             self.trick_end_hook,
                              self.end_game_hook,
                              self.passed_cards_hook
                              )

@@ -4,8 +4,7 @@ from typing import Optional
 from api import API
 from backend.player import Player
 from backend.deck import Deck, SUIT
-import time
-
+from backend.round import Round
 
 SERVER_PORT = 2345
 SERVER_IP = "0.0.0.0"
@@ -151,12 +150,17 @@ def main():
                     player_hand.pop(card_index)
                 return chosen_cards
 
+            def trick_end_hook(trick: 'Round.Trick') -> None:
+                trick_outcome = str(trick)
+                for player in players:
+                    players[player].send(trick_outcome.encode())
+
             game.set_play_card_hook(play_card_hook)
             game.set_get_pass_cards_hook(get_pass_cards_hook)
 
             game.set_hearts_broken_hook(hearts_broken_hook)
             game.set_round_end_hook(round_end_hook)
-
+            game.set_trick_end_hook(trick_end_hook)
             game.start_game()
 
 

@@ -15,6 +15,7 @@ class Game:
                  get_pass_cards: Callable[[Player], list[Deck.Card]],
                  hearts_broken_hook: Callable[[], None],
                  round_end_hook: Callable[[], None],
+                 trick_end_hook: Callable[[Round.Trick], None],
                  end_game_hook: Callable[[], None],
                  passed_cards_hook: Callable[[dict[Player, list[Deck.Card]]], None],
                  settings={'END_GAME_SCORE': 50, 'JACK_NEGATIVE': True}
@@ -39,6 +40,7 @@ class Game:
         self.get_pass_cards = get_pass_cards
 
         self.hearts_broken_hook = hearts_broken_hook
+        self.trick_end_hook = trick_end_hook
         self.round_end_hook = round_end_hook
         self.end_game_hook = end_game_hook
         self.passed_cards_hook = passed_cards_hook

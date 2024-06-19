@@ -31,6 +31,7 @@ class Round:
         for _ in range(13):
             self.current_trick = self.Trick(self)
             self.current_trick.play_trick()
+            self.game.trick_end_hook(self.current_trick)
             winner = self.current_trick.winner
             if winner is None:
                 raise ValueError("No winner found for the trick")
