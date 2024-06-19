@@ -35,6 +35,9 @@ class API:
         # *Optional hooks
         # This hook gets called when the round ends
         self.round_end_hook = lambda: None
+        # This hook gets called when a card is played
+        self.card_played_hook: Callable[[
+            'Player', 'Deck.Card'], None] = lambda _, __: None
         # This hook gets called when hearts are broken
         self.hearts_broken_hook = lambda: None
         # This hook gets called when the game ends
@@ -177,6 +180,17 @@ class API:
 
         self.end_game_hook = hook
 
+    def set_card_played_hook(self, hook: Callable[['Player', 'Deck.Card'], None]):
+        """Hook that will be called when a card is played
+
+        Args:
+            hook (Callable[[Player, Deck.Card], None]): 
+        """
+        if not callable(hook):
+            raise ValueError("Hook must be a callable function")
+
+        self.card_played_hook = hook
+
     def add_player(self, player_name: str):
         """Add a player to the game
 
@@ -204,8 +218,6 @@ class API:
         return cards
 
     def start_game(self):
-        if len(self.players) != 4:
-            raise ValueError("Game must have 4 players to start")
         if not self.play_card or not self.pass_cards:
             raise ValueError("Play card and pass cards hooks must be set")
 
@@ -222,6 +234,7 @@ class API:
                              self.hearts_broken_hook,
                              self.round_end_hook,
                              self.trick_end_hook,
+                             self.card_played_hook,
                              self.end_game_hook,
                              self.passed_cards_hook
                              )
@@ -251,7 +264,7 @@ class API:
                     "round_score": player.round_score,
                     "cards_taken":   self.sort_hand(player.cards_taken),
                     "hand": self.sort_hand(player.hand),
-                } for player in self.game.players
+                } for player in self.game.players + self.game.bots
             }
         }
         return state

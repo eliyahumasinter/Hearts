@@ -3,7 +3,7 @@ from backend.player import Player
 from backend.deck import Deck
 from backend.exceptions import BadPlayerListError
 from backend.round import Round
-
+import backend.ai as ai
 if TYPE_CHECKING:
     from backend.deck import SUIT
 
@@ -16,6 +16,7 @@ class Game:
                  hearts_broken_hook: Callable[[], None],
                  round_end_hook: Callable[[], None],
                  trick_end_hook: Callable[[Round.Trick], None],
+                 card_end_hook: Callable[[Player, Deck.Card], None],
                  end_game_hook: Callable[[], None],
                  passed_cards_hook: Callable[[dict[Player, list[Deck.Card]]], None],
                  settings={'END_GAME_SCORE': 50, 'JACK_NEGATIVE': True}
@@ -27,9 +28,14 @@ class Game:
             players (list[Player]): A list of players
         """
 
-        if len(players) != 4 or len([player.name.lower() for player in players]) != 4:
+        if len([player.name.lower() for player in players]) != len(set([player.name.lower() for player in players])) or len(players) > 4:
             raise BadPlayerListError(
-                "The game only supports 4 players. Please provide a list of 4 players with unique names.")
+                "Up to 4 people may play, each must have a different name")
+
+        self.bots = []
+        if len(players) < 4:  # Add bots to fill the game
+            for i in range(4 - len(players)):
+                self.bots.append(Player(f"Bot {i+1}", am_bot=True))
 
         self.players = players
         self.settings = settings
@@ -43,6 +49,7 @@ class Game:
         self.trick_end_hook = trick_end_hook
         self.round_end_hook = round_end_hook
         self.end_game_hook = end_game_hook
+        self.card_played_hook = card_end_hook
         self.passed_cards_hook = passed_cards_hook
 
         self.deck = Deck()
@@ -63,15 +70,15 @@ class Game:
             raise ValueError("You must pass exactly 3 cards")
         if not all([card in player.hand for card in cards]):
             raise ValueError("You must pass cards that are in your hand")
-
+        all_players = self.players + self.bots
         player.hand = [card for card in player.hand if card not in cards]
         # Pass the cards to the correct player
         if self.round_count % 4 == 0:  # pass to the left
-            other = self.players[(self.players.index(player) - 1) % 4]
+            other = all_players[(all_players.index(player) - 1) % 4]
         elif self.round_count % 4 == 1:  # pass to the right
-            other = self.players[(self.players.index(player) + 1) % 4]
+            other = all_players[(all_players.index(player) + 1) % 4]
         elif self.round_count % 4 == 2:  # pass across
-            other = self.players[(self.players.index(player) + 2) % 4]
+            other = all_players[(all_players.index(player) + 2) % 4]
         else:  # Hold hand
             raise ValueError("You should not be passing cards on a hold round")
 
@@ -83,25 +90,27 @@ class Game:
         """
         while max([player.total_score for player in self.players]) < self.settings['END_GAME_SCORE']:
             self.hands = self.deck.deal()
-            for i, player in enumerate(self.players):
+            for i, player in enumerate(self.players+self.bots):
                 player.set_hand(self.hands[i])
 
             # Pass cards
             if self.round_count % 4 != 3:
                 for player in self.players:
                     cards = self.get_pass_cards(player)
-
                     self.pass_cards(player, cards)
+                for bot in self.bots:
+                    cards = ai.bot_pass_cards(bot)
+                    self.pass_cards(bot, cards)
                 # Put the passed cards in the hand
                 passed_cards = {}
-                for player in self.players:
+                for player in self.players+self.bots:
                     player.hand.extend(player.passed_cards)
                     passed_cards[player] = player.passed_cards
                     player.passed_cards = []
 
             self.round = Round(self)  # type: ignore
             self.round.play_round()
-            for player in self.players:
+            for player in self.players+self.bots:
                 player.finish_round()  # Update player scores and prepare for next round
 
             self.round_count += 1
@@ -114,14 +123,14 @@ class Game:
         """
         self.deck = Deck()
         self.hands = self.deck.deal()
-        for i, player in enumerate(self.players):
+        for i, player in enumerate(self.players+self.bots):
             player.set_hand(self.hands[i])
 
         self.round_count = 0
         self.trick_count = 0
 
     def print_current_hands(self) -> None:
-        for player in self.players:
+        for player in self.players+self.bots:
             print(f"{player}: ", end="")
             for card in Deck.sort_hand(player.hand):
                 print(card, end=", ")

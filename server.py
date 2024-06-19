@@ -25,6 +25,29 @@ def socket_to_name(clients_names, current_socket):
     return sender_name
 
 
+class Print:
+    HEADER = '\033[95m'
+    BLUE = '\033[94m'
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    END = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+    @staticmethod
+    def print(*args, color=None, bold=False, underline=False, end='\n'):
+        if color:
+            print(color, end='')
+        if bold:
+            print(Print.BOLD, end='')
+        if underline:
+            print(Print.UNDERLINE, end='')
+        print(*args, end='')
+        print(Print.END, end=end)
+
+
 def main():
     print("Setting up server...")
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -71,7 +94,7 @@ def main():
                     #     if client != current_socket:
                     #         client.sendall(data.encode())
 
-        if len(players) == 4:
+        if len(players) == 1:
             game = API()
             games.append(game)
             for player in players:
@@ -81,7 +104,7 @@ def main():
 
             def hearts_broken_hook():
                 for player in players:
-                    players[player].send("Hearts has been broken!".encode())
+                    players[player].send("Hearts has been broken!\n".encode())
 
             def round_end_hook():
                 for user in players:
@@ -91,7 +114,7 @@ def main():
                     player_state = state['players']
                     for player in player_state:
                         players[user].send(
-                            f"{player}: {player_state[player]['total_score']}\n".encode())
+                            f"\n\n{player}: {player_state[player]['total_score']}\n\n".encode())
 
             def play_card_hook(player: Player, led_suit: Optional[SUIT], is_leading: bool) -> Deck.Card:
                 """Method to get the card to play from the player. This method will be called for each player in the trick. 
@@ -104,7 +127,6 @@ def main():
                     Returns:
                         Deck.Card: The validated card the player wants to play
                     """
-
                 player_socket = players[player.name]
                 # Get the cards that the player is allowed to play
                 allowed_cards = game.get_allowed_cards(
@@ -115,11 +137,6 @@ def main():
                 player_socket.send("INPUT".encode())
 
                 card = player_socket.recv(1024).decode().strip()
-                # Alert the other players of the card played
-                for p in players:
-                    if p != player.name:
-                        players[p].send(
-                            f"{player} played {allowed_cards[int(card)]}\n".encode())
 
                 return allowed_cards[int(card)]
 
@@ -153,7 +170,14 @@ def main():
             def trick_end_hook(trick: 'Round.Trick') -> None:
                 trick_outcome = str(trick)
                 for player in players:
-                    players[player].send(trick_outcome.encode())
+                    players[player].send(
+                        f"\n{'-'*10}\n\n{trick_outcome}\n\n{'-'*10}\n".encode())
+
+            def card_played_hook(player: Player, card: Deck.Card) -> None:
+                for p in players:
+                    if p != player.name:
+                        players[p].send(
+                            f"{player.name}: {card}\n".encode())
 
             game.set_play_card_hook(play_card_hook)
             game.set_get_pass_cards_hook(get_pass_cards_hook)
@@ -161,6 +185,7 @@ def main():
             game.set_hearts_broken_hook(hearts_broken_hook)
             game.set_round_end_hook(round_end_hook)
             game.set_trick_end_hook(trick_end_hook)
+            game.set_card_played_hook(card_played_hook)
             game.start_game()
 
 

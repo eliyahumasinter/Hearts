@@ -11,8 +11,9 @@ if TYPE_CHECKING:
 class Player:
     """A class to represent a player in the hearts game"""
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, am_bot=False) -> None:
         self.name = name
+        self.am_bot = am_bot  # Am I a bot?
         self.hand: list[Deck.Card] = []
         self.total_score = 0
         self.round_score = 0  # The score of the player in the current round
