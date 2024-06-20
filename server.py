@@ -233,7 +233,7 @@ class Game:
         player_socket.send(Game.printer(
             "Your turn to play", color=Game.printer.GREEN))
         player_socket.send(Game.printer(
-            "Your hand:", color=Game.printer.HEADER))
+            "Cards you can play:", color=Game.printer.HEADER))
         player_socket.send(Game.printer.display_hand(allowed_cards))
 
         return allowed_cards[self.get_valid_user_input(
