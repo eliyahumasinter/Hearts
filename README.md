@@ -16,10 +16,12 @@ The API connects between the Logical Layer and the Presentation Layer. It allows
 
 #### The Presentation Layer
 The presentation layer never talks to the logical layer. It interacts solely through the API. It does this by setting hooks/callbacks that the API can validate and then use in the logical layer.
+The current presentation layer is a text-based UI. A server allows users to connect, and then it will start games in different threads to allow users to play concurrently. Note that the server is technically part of the presentation layer because it is only responsible for displaying info to each user; it does not do any gameplay logic.
+
+![image](https://github.com/eliyahumasinter/Hearts/assets/70181151/a5857851-9fc6-4b5d-86be-9cdadd2c99dd)
+command line version mentioned above
 
 ## Current project status
-The logical layer is nearly complete. More unit and integration tests must be written, but the functionality is almost all there. Additionally, I'd like to build an AI to play so a single user can play.
+The logical layer is nearly complete. More unit and integration tests must be written, but the functionality is almost all there. 
 
-The API needs its own suite of tests written. There are a few more hooks that need to be included.
-
-The presentation layer needs to be created. I'd like to build a few different ones. I created a terminal presentation layer, but of course that is just for testing. I hope to build a multi-player pygame front end that works over sockets. Perhaps a similar React web app.
+I have implemented the structure necessary to allow 'bots' to play allowing for games with fewer than 4 people. At the moment, the bot just chooses the first card that it is allowed to play. Obviously, this needs to be improved on. Once the server handling all of the sockets and threading is completed and polished I will use it as a base for another presentation layer using pygame. I hope to eventually host this project and build a web interface to allow users to connect online instead of downloading the client.
